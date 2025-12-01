@@ -1,0 +1,21 @@
+{
+  "name": "testing-smart-accounts-kit",
+  "version": "1.0.0",
+  "description": "Test project for @metamask/smart-accounts-kit delegation utilities",
+  "main": "index.js",
+  "scripts": {
+    "test": "tsx test-delegation-imports.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@metamask/smart-accounts-kit": "^0.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.6",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
+    "typescript": "^5.3.3"
+  }
+}
