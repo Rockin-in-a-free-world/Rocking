@@ -1,12 +1,13 @@
 /**
  * Test file to verify decodeDelegations and encodeDelegations imports
+ * Based on beta-docs.md examples
  * Run with: npm test
  * Or: npx tsx test-delegation-imports.ts
  */
 
-// Try importing from the utils subpath first
-// If that doesn't work, we may need to adjust the import path
-import { decodeDelegations, encodeDelegations, toDelegation, type DelegationStruct } from "@metamask/smart-accounts-kit/utils";
+import { decodeDelegations, encodeDelegations } from "@metamask/smart-accounts-kit/utils";
+import { createDelegation, getSmartAccountsEnvironment } from "@metamask/smart-accounts-kit";
+import { parseEther } from "viem";
 
 console.log("Testing @metamask/smart-accounts-kit/utils imports...\n");
 
@@ -26,24 +27,27 @@ if (typeof encodeDelegations !== "function") {
 console.log("  ✓ Both functions exist\n");
 
 // Test 2: Test encodeDelegations to create a valid encoded string
+// Following the beta-docs.md example
 console.log("Test 2: Testing encodeDelegations");
 let testEncoded: string | null = null;
 try {
-  // Create a valid DelegationStruct object
-  // DelegationStruct has: delegate, delegator, authority, caveats, salt (as bigint), signature
-  const delegationStruct: DelegationStruct = {
-    delegate: "0x0000000000000000000000000000000000000001",
-    delegator: "0x0000000000000000000000000000000000000002",
-    authority: "0x0000000000000000000000000000000000000003",
-    caveats: [], // Empty array of caveats
-    salt: BigInt(0), // salt must be bigint in DelegationStruct
-    signature: "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", // 65 bytes (r, s, v)
-  };
+  // Create a delegation using createDelegation as shown in beta-docs.md
+  // Using Sepolia chain ID (11155111) for the environment
+  const sepoliaChainId = 11155111;
+  const environment = getSmartAccountsEnvironment(sepoliaChainId);
   
-  // Convert DelegationStruct to Delegation (salt becomes Hex)
-  const delegation = toDelegation(delegationStruct);
+  const delegation = createDelegation({
+    from: "0x7E48cA6b7fe6F3d57fdd0448B03b839958416fC1",
+    to: "0x2B2dBd1D5fbeB77C4613B66e9F35dBfE12cB0488",
+    environment: environment,
+    scope: {
+      type: "nativeTokenTransferAmount",
+      // 0.001 ETH in wei format
+      maxAmount: parseEther("0.001"),
+    },
+  });
   
-  // Encode the delegation array
+  // Encode the delegation array as shown in beta-docs.md
   testEncoded = encodeDelegations([delegation]);
   console.log("  ✓ encodeDelegations works");
   console.log("  Encoded string:", testEncoded);
