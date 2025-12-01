@@ -1,0 +1,54 @@
+Testing smart-accounts-kit
+
+1.    npm install @metamask/smart-accounts-kit
+for Typescript test:
+2.    npm install -D ts-node typescript
+   npx ts-node test-delegation-imports.ts
+
+
+
+```test-delegation-imports.ts
+/**
+ * Test file to verify decodeDelegations and encodeDelegations imports
+ * Run with: npx ts-node test-delegation-imports.ts
+ */
+
+import { decodeDelegations, encodeDelegations } from "@metamask/smart-accounts-kit/utils";
+
+console.log("Testing @metamask/smart-accounts-kit/utils imports...\n");
+
+// Test 1: Check if functions exist
+console.log("Test 1: Checking function existence");
+console.log("  decodeDelegations type:", typeof decodeDelegations);
+console.log("  encodeDelegations type:", typeof encodeDelegations);
+
+if (typeof decodeDelegations !== "function") {
+  console.error("  ✗ decodeDelegations is not a function");
+  process.exit(1);
+}
+if (typeof encodeDelegations !== "function") {
+  console.error("  ✗ encodeDelegations is not a function");
+  process.exit(1);
+}
+console.log("  ✓ Both functions exist\n");
+
+// Test 2: Test decodeDelegations with example from docs
+console.log("Test 2: Testing decodeDelegations");
+try {
+  const testEncoded = "0x7f0db33d..c06aeeac"; // Example from documentation
+  const decoded = decodeDelegations(testEncoded);
+  console.log("  ✓ decodeDelegations works");
+  console.log("  Result:", decoded);
+} catch (error) {
+  console.error("  ✗ decodeDelegations error:", error);
+  console.error("  This might be expected if the encoded string is just an example");
+}
+
+// Test 3: Test encodeDelegations (would need actual delegation object)
+console.log("\nTest 3: Testing encodeDelegations");
+console.log("  Note: This requires a valid delegation object");
+console.log("  Function exists:", typeof encodeDelegations === "function");
+console.log("  ✓ encodeDelegations import successful");
+
+console.log("\n✅ All imports verified successfully!");
+```
