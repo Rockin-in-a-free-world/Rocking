@@ -1,0 +1,19 @@
+{
+  "name": "testing-redelegation",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Test project for decodeDelegations and encodeDelegations tutorial",
+  "scripts": {
+    "test": "tsx test-tutorial.ts"
+  },
+  "dependencies": {
+    "@metamask/smart-accounts-kit": "^0.1.0",
+    "dotenv": "^17.2.3",
+    "viem": "^2.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.6",
+    "tsx": "^4.21.0",
+    "typescript": "^5.3.3"
+  }
+}
