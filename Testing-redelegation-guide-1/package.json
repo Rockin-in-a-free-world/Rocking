@@ -1,0 +1,21 @@
+{
+  "name": "testing-redelegation-guide",
+  "version": "1.0.0",
+  "description": "Test project for redelegation guide from MetaMask docs PR #2554",
+  "main": "test-redelegation.ts",
+  "scripts": {
+    "test": "tsx test-redelegation.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@metamask/smart-accounts-kit": "^0.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.6",
+    "tsx": "^4.21.0",
+    "typescript": "^5.3.3"
+  }
+}
+
