@@ -3,8 +3,8 @@
  */
 export type TransactionState = 
   | 'submitted'    // Created locally
-  | 'broadcast'    // In mempool
-  | 'confirmed'    // In block, voted
+  | 'broadcast'    // Broadcasting (in mempool or being processed by validators)
+  | 'confirmed'    // In block, voted on by validators
   | 'finalized'    // Irreversible
   | 'failed';      // Error occurred
 

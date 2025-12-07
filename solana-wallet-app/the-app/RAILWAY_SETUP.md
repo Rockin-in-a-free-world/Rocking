@@ -35,17 +35,13 @@
 Add these in Railway dashboard → Variables:
 
 ```bash
-# MetaMask Embedded Wallets (Required)
-NEXT_PUBLIC_EMBEDDED_WALLET_CLIENT_ID=your_client_id
-EMBEDDED_WALLET_SECRET_KEY=your_secret_key
-
 # Solana (Required)
 NEXT_PUBLIC_SOLANA_RPC_URL=https://api.devnet.solana.com
 NEXT_PUBLIC_SOLANA_NETWORK=devnet
+SOLANA_RPC_URL=https://api.devnet.solana.com
 
-# Feemaster (Set after first setup)
+# Feemaster (Optional - can be set via setup endpoint)
 FEEMASTER_SEED_PHRASE="word1 word2 ... word12"  # Optional: can be set via setup endpoint
-FEEMASTER_PUBLIC_KEY=<public_key>                # Optional: will be set by setup
 ```
 
 ## How Railway Secrets Work

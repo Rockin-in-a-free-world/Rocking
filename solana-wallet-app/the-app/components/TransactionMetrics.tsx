@@ -25,7 +25,7 @@ export default function TransactionMetrics({ metrics, isLoading, balance }: Tran
   const metricItems = [
     { label: 'Balance', value: balance !== null && balance !== undefined ? `${balance.toFixed(4)} SOL` : 'Loading...', highlight: true },
     { label: 'Submitted', value: metrics?.submitted ?? 0 },
-    { label: 'Broadcast', value: metrics?.broadcast ?? 0 },
+    { label: 'Broadcasting', value: metrics?.broadcast ?? 0 },
     { label: 'Confirmed', value: metrics?.confirmed ?? 0 },
     { label: 'Finalized', value: metrics?.finalized ?? 0 },
     { label: 'Failed', value: metrics?.failed ?? 0 },
