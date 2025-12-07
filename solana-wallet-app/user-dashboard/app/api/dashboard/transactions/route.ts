@@ -32,8 +32,8 @@ export async function GET(request: NextRequest) {
     // Get transaction signatures
     const signatures = await getTransactionSignatures(connection, publicKey);
 
-    // Get transaction statuses
-    const transactions = await getTransactionStatuses(connection, signatures);
+    // Get transaction statuses (pass user address to determine if transactions are user-initiated)
+    const transactions = await getTransactionStatuses(connection, signatures, publicKey);
 
     // Calculate metrics from on-chain data only
     const metrics = calculateMetrics(transactions);

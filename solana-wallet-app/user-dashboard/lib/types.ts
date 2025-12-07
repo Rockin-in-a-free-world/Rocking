@@ -32,5 +32,6 @@ export interface Transaction {
   state: TransactionState;
   timestamp: number;
   error?: string;
+  isUserInitiated?: boolean; // True if user initiated this transaction (sent), false if received (deposit/airdrop)
 }
 
