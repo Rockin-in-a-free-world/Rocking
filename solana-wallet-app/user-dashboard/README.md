@@ -2,6 +2,15 @@
 
 A local Next.js application for managing Solana wallets with transaction monitoring. This is a simplified version focused on user functionality only - no feemaster/admin features.
 
+## 📚 Documentation
+
+**New to Solana or this codebase?** Check out the [**Tutorial**](./docs/TUTORIAL.md) - a comprehensive guide for junior web2 developers covering:
+- How the app derives wallet addresses from seed phrases
+- How signing works with private keys (without exposing them)
+- TetherTo WDK SDK vs @solana/web3.js usage
+- Security considerations and how secrets are protected
+- Complete code walkthrough with links to interesting sections
+
 ## Features
 
 - **Seed Phrase Login**: Login with existing seed phrase or generate a new wallet
