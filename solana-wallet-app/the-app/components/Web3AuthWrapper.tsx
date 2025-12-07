@@ -3,23 +3,47 @@
 import { Web3AuthProvider } from '@web3auth/modal/react'
 import { getWeb3AuthContextConfig } from '@/lib/web3authContext'
 import { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
 
+/**
+ * Web3AuthWrapper - Only initializes Web3Auth for user pages
+ * 
+ * Feemaster pages don't use Web3Auth (they use Tether WDK SDK with seed phrases)
+ * So we only initialize Web3Auth on user pages (/, /dashboard)
+ */
 export default function Web3AuthWrapper({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
   const [config, setConfig] = useState<ReturnType<typeof getWeb3AuthContextConfig> | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isFeemasterPage, setIsFeemasterPage] = useState(false);
 
   useEffect(() => {
+    // Check if we're on a feemaster page
+    const isFeemaster = pathname?.startsWith('/feemaster') || false;
+    setIsFeemasterPage(isFeemaster);
+
+    // Only initialize Web3Auth for user pages (not feemaster)
+    if (isFeemaster) {
+      // Feemaster pages don't need Web3Auth - skip initialization
+      return;
+    }
+
     try {
-      // Get config only in browser (client-side)
+      // Get config only in browser (client-side) and only for user pages
       const web3AuthContextConfig = getWeb3AuthContextConfig();
       setConfig(web3AuthContextConfig);
     } catch (err: any) {
       console.error('Web3Auth configuration error:', err);
       setError(err.message || 'Failed to initialize Web3Auth');
     }
-  }, []);
+  }, [pathname]);
 
-  // Show error if configuration failed
+  // Feemaster pages: Skip Web3Auth entirely
+  if (isFeemasterPage) {
+    return <>{children}</>;
+  }
+
+  // Show error if configuration failed (only on user pages)
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-red-50 p-8">
@@ -32,7 +56,7 @@ export default function Web3AuthWrapper({ children }: { children: React.ReactNod
             </p>
             <ul className="list-disc list-inside mt-2 text-sm text-yellow-800 space-y-1">
               <li>Check Railway Variables (if deployed) or .env.local (if local)</li>
-              <li>Ensure NEXT_PUBLIC_EMBEDDED_WALLET_CLIENT_ID is set</li>
+              <li>Ensure NEXT_PUBLIC_EMBEDDED_WALLET_CLIENT_ID is set in Shared Variables (with checkmark)</li>
               <li>Get your Client ID from: <a href="https://dashboard.web3auth.io" target="_blank" rel="noopener noreferrer" className="underline">Web3Auth Dashboard</a></li>
             </ul>
           </div>
@@ -41,7 +65,7 @@ export default function Web3AuthWrapper({ children }: { children: React.ReactNod
     );
   }
 
-  // Wait for config to be loaded
+  // Wait for config to be loaded (only on user pages)
   if (!config) {
     return (
       <div className="min-h-screen flex items-center justify-center">
