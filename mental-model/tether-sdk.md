@@ -20,3 +20,11 @@ Your keys:
 
 - All cryptography done by you: non-custodial
 
+## Native compilation required
+
+- Requires native compilation: 
+	- Cannot run in serverless functions (Vercel, AWS Lambda, etc.)
+	- Needs a full Node.js environment with native bindings
+
+Dependency: @tetherto/wdk-wallet-solana SDK uses sodium-native, hence native compilation.
+
