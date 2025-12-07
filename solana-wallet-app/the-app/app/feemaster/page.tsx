@@ -111,7 +111,7 @@ export default function FeemasterLogin() {
           disabled={loading || (!seedPhrase.trim() && !confirmed)}
           className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
         >
-          {loading ? 'Logging in...' : 'Gmail login'}
+          {loading ? 'Logging in...' : 'Login with Seed Phrase'}
         </button>
 
         <div className="mt-6 p-4 bg-red-50 rounded-lg">

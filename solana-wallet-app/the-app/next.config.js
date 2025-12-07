@@ -8,11 +8,18 @@ const nextConfig = {
       config.externals = config.externals || [];
       // Don't externalize these - they need to be bundled for server
     } else {
-      // Client-side: exclude native modules completely
+      // Client-side: exclude native modules and React Native dependencies
       config.resolve.fallback = {
         ...config.resolve.fallback,
         'sodium-native': false,
         '@tetherto/wdk-wallet-solana': false,
+        '@react-native-async-storage/async-storage': false,
+        '@metamask/embedded-wallets': false,
+      };
+      // Ignore React Native dependencies in client bundle
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        '@react-native-async-storage/async-storage': false,
       };
     }
     return config;

@@ -2,10 +2,14 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useWeb3Auth } from '@web3auth/modal/react';
+import { useSolanaWallet } from '@web3auth/modal/react/solana';
 import { authenticateWithGoogle, storeWalletCredentials } from '@/lib/wallet';
 
 export default function Home() {
   const router = useRouter();
+  const web3Auth = useWeb3Auth();
+  const solanaWallet = useSolanaWallet();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -14,8 +18,8 @@ export default function Home() {
     setError(null);
     
     try {
-      // Authenticate with Google using MetaMask Embedded Wallets SDK
-      const { address, privateKey } = await authenticateWithGoogle();
+      // Authenticate with Google using Web3Auth (MetaMask Embedded Wallets)
+      const { address, privateKey } = await authenticateWithGoogle(web3Auth, solanaWallet);
       
       // Store credentials in session
       storeWalletCredentials(address, privateKey);
