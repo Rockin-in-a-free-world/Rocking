@@ -1,0 +1,25 @@
+{
+  "name": "wallet-dashboard",
+  "version": "1.0.0",
+  "description": "Solana Wallet Dashboard - Mini project from wdk-wallet-solana tutorial",
+  "type": "module",
+  "main": "app.js",
+  "scripts": {
+    "dev": "npx serve .",
+    "start": "node app.js"
+  },
+  "keywords": [
+    "solana",
+    "wallet",
+    "web3",
+    "blockchain"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@tetherto/wdk-wallet-solana": "^1.0.0-beta.4",
+    "@scure/bip39": "^1.2.0",
+    "dotenv": "^16.0.0"
+  },
+  "devDependencies": {}
+}

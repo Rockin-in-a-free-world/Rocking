@@ -1,0 +1,21 @@
+# Environment variables (may contain seed phrases in testing)
+.env
+.env.local
+.env.*.local
+
+# Node modules
+node_modules/
+
+# Build outputs
+dist/
+build/
+*.log
+
+# Encrypted wallet files (if using encryption tutorial)
+*.encrypted
+wallet.encrypted
+
+# OS files
+.DS_Store
+Thumbs.db
+
