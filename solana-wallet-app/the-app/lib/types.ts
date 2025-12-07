@@ -32,6 +32,7 @@ export interface Transaction {
   state: TransactionState;
   timestamp: number;
   error?: string;
+  isOutgoing?: boolean; // True if this address is the sender (outgoing transaction)
 }
 
 /**
