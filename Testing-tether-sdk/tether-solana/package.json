@@ -1,0 +1,14 @@
+{
+  "name": "tether-solana",
+  "version": "1.0.0",
+  "description": "testing tether's solana sdk",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm run dev"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@tetherto/wdk-wallet-solana": "^1.0.0-beta.4"
+  }
+}
