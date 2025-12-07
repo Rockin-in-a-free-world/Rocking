@@ -85,7 +85,7 @@ export async function getTransactionStatuses(
         connection.getTransaction(sig, {
           commitment: 'confirmed',
           maxSupportedTransactionVersion: 0,
-          encoding: 'jsonParsed', // Use jsonParsed to get structured account keys
+          encoding: 'json', // Explicitly use 'json' encoding - accountKeys will be array of strings
         }).catch(() => null)
       )
     );
@@ -94,39 +94,40 @@ export async function getTransactionStatuses(
       const tx = statusTxs[batchIndex];
       if (tx && results[originalIndex]) {
         const meta = tx.meta;
-        const accountKeys = tx.transaction?.message?.accountKeys || [];
+        // With 'json' encoding, account keys are in staticAccountKeys as PublicKey objects
+        const staticAccountKeys = tx.transaction?.message?.staticAccountKeys || [];
         let isUserInitiated = false;
         const userAddressStr = userAddress.toBase58();
         
-        // Check if user is the fee payer (first account is typically the fee payer)
-        if (accountKeys.length > 0) {
-          const feePayer = accountKeys[0];
-          let feePayerAddress: string;
-          
-          // Handle different account key formats
-          if (typeof feePayer === 'string') {
-            feePayerAddress = feePayer;
-          } else if (feePayer && typeof feePayer === 'object') {
-            // Could be { pubkey: string } or PublicKey object
-            feePayerAddress = feePayer.pubkey || feePayer.toString() || '';
-          } else {
-            feePayerAddress = '';
+        // Helper function to extract address from account key
+        // With 'json' encoding, staticAccountKeys is array of PublicKey objects
+        // With 'jsonParsed' encoding, accountKeys is array of { pubkey: string }
+        const extractAddress = (key: any): string => {
+          if (typeof key === 'string') {
+            return key;
           }
-          
+          // PublicKey object (from 'json' encoding)
+          if (key && typeof key === 'object' && key.toBase58) {
+            return key.toBase58();
+          }
+          // jsonParsed format: { pubkey: string }
+          if (key && typeof key === 'object') {
+            return key.pubkey || String(key) || '';
+          }
+          return '';
+        };
+        
+        // Check if user is the fee payer (first account is typically the fee payer)
+        if (staticAccountKeys.length > 0) {
+          const feePayerAddress = extractAddress(staticAccountKeys[0]);
+          // Normalize addresses for comparison (both should be base58 strings)
           isUserInitiated = feePayerAddress === userAddressStr;
         }
         
         // Also check balance change - if user's balance decreased, they sent it
-        if (!isUserInitiated && meta && meta.preBalances && meta.postBalances && accountKeys.length > 0) {
-          const userIndex = accountKeys.findIndex((key: any) => {
-            let addr: string;
-            if (typeof key === 'string') {
-              addr = key;
-            } else if (key && typeof key === 'object') {
-              addr = key.pubkey || key.toString() || '';
-            } else {
-              addr = '';
-            }
+        if (!isUserInitiated && meta && meta.preBalances && meta.postBalances && staticAccountKeys.length > 0) {
+          const userIndex = staticAccountKeys.findIndex((key: any) => {
+            const addr = extractAddress(key);
             return addr === userAddressStr;
           });
           
@@ -153,7 +154,7 @@ export async function getTransactionStatuses(
         connection.getTransaction(sig, {
           commitment: 'finalized',
           maxSupportedTransactionVersion: 0,
-          encoding: 'jsonParsed', // Use jsonParsed to get structured account keys
+          encoding: 'json', // Explicitly use 'json' encoding - accountKeys will be array of strings
         }).catch(() => null)
       )
     );
@@ -165,7 +166,7 @@ export async function getTransactionStatuses(
         connection.getTransaction(sig, {
           commitment: 'confirmed',
           maxSupportedTransactionVersion: 0,
-          encoding: 'jsonParsed', // Use jsonParsed to get structured account keys
+          encoding: 'json', // Explicitly use 'json' encoding - accountKeys will be array of strings
         }).catch(() => null)
       )
     );
@@ -193,38 +194,36 @@ export async function getTransactionStatuses(
         const tx = finalizedTx || confirmedTx;
         if (tx) {
           const meta = tx.meta;
-          const accountKeys = tx.transaction?.message?.accountKeys || [];
+          // With 'json' encoding, account keys are in staticAccountKeys as PublicKey objects
+          const staticAccountKeys = tx.transaction?.message?.staticAccountKeys || [];
           const userAddressStr = userAddress.toBase58();
           
-          // Check if user is the fee payer
-          if (accountKeys.length > 0) {
-            const feePayer = accountKeys[0];
-            let feePayerAddress: string;
-            
-            // Handle different account key formats
-            if (typeof feePayer === 'string') {
-              feePayerAddress = feePayer;
-            } else if (feePayer && typeof feePayer === 'object') {
-              // Could be { pubkey: string } or PublicKey object
-              feePayerAddress = feePayer.pubkey || feePayer.toString() || '';
-            } else {
-              feePayerAddress = '';
+          // Helper function to extract address from account key
+          const extractAddress = (key: any): string => {
+            if (typeof key === 'string') {
+              return key;
             }
-            
+            // PublicKey object (from 'json' encoding)
+            if (key && typeof key === 'object' && key.toBase58) {
+              return key.toBase58();
+            }
+            // jsonParsed format: { pubkey: string }
+            if (key && typeof key === 'object') {
+              return key.pubkey || String(key) || '';
+            }
+            return '';
+          };
+          
+          // Check if user is the fee payer
+          if (staticAccountKeys.length > 0) {
+            const feePayerAddress = extractAddress(staticAccountKeys[0]);
             isUserInitiated = feePayerAddress === userAddressStr;
           }
           
           // Also check balance change
-          if (!isUserInitiated && meta && meta.preBalances && meta.postBalances && accountKeys.length > 0) {
-            const userIndex = accountKeys.findIndex((key: any) => {
-              let addr: string;
-              if (typeof key === 'string') {
-                addr = key;
-              } else if (key && typeof key === 'object') {
-                addr = key.pubkey || key.toString() || '';
-              } else {
-                addr = '';
-              }
+          if (!isUserInitiated && meta && meta.preBalances && meta.postBalances && staticAccountKeys.length > 0) {
+            const userIndex = staticAccountKeys.findIndex((key: any) => {
+              const addr = extractAddress(key);
               return addr === userAddressStr;
             });
             
@@ -254,13 +253,16 @@ export async function getTransactionStatuses(
  * Calculate metrics from transactions (on-chain data only)
  * 
  * Note: A finalized transaction is also counted as confirmed.
- * "Submitted" only counts user-initiated transactions (sends), not received deposits/airdrops.
+ * "Submitted" counts user-initiated transactions (sends), not received deposits/airdrops.
+ * 
+ * Logical consistency: If a transaction progressed beyond "submitted" state and is user-initiated,
+ * it must have been submitted. So we count user-initiated transactions in submitted.
  */
 export function calculateMetrics(
   transactions: Transaction[]
 ): TransactionMetrics {
   const metrics: TransactionMetrics = {
-    submitted: 0, // Only count user-initiated transactions
+    submitted: 0, // Count user-initiated transactions only
     broadcast: 0,
     confirmed: 0,
     finalized: 0,
@@ -268,9 +270,12 @@ export function calculateMetrics(
   };
   
   transactions.forEach(tx => {
-    // Only count user-initiated transactions in "submitted"
+    // Count user-initiated transactions in "submitted"
     // (transactions the user sent, not deposits/airdrops they received)
-    if (tx.isUserInitiated) {
+    // If a transaction is finalized/confirmed/broadcast and user-initiated, it was submitted
+    if (tx.isUserInitiated && tx.state !== 'submitted') {
+      metrics.submitted++;
+    } else if (tx.state === 'submitted' && tx.isUserInitiated) {
       metrics.submitted++;
     }
     
@@ -287,13 +292,10 @@ export function calculateMetrics(
         metrics.confirmed++;
         break;
       case 'failed':
-        // Only count failed user-initiated transactions
-        if (tx.isUserInitiated) {
-          metrics.failed++;
-        }
+        metrics.failed++;
         break;
       case 'submitted':
-        // Submitted transactions are already counted above if user-initiated
+        // Already counted above if user-initiated
         break;
     }
   });
