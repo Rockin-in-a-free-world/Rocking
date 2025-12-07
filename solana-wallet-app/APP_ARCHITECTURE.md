@@ -90,7 +90,12 @@ User initiates transaction
 
 See [DASHBOARD_REFRESH.md](./DASHBOARD_REFRESH.md) for refresh implementation details.
 
-## Status Calculation
+## Status Calculation (On-Chain Data Only)
+
+**Simplified MVP Logic:**
+- Uses only on-chain transaction data
+- No acknowledged failures feature
+- Failed transactions trigger permanent "Gutted" status
 
 ```typescript
 interface TransactionMetrics {
@@ -98,30 +103,40 @@ interface TransactionMetrics {
   broadcast: number;
   confirmed: number;
   finalized: number;
-  acknowledgedFailures: number; // User-acknowledged failures
+  failed: number;
 }
 
 function calculateStatus(metrics: TransactionMetrics): 'Grand' | 'Good' | 'Gutted' {
-  const { submitted, confirmed, finalized, acknowledgedFailures } = metrics;
+  const { submitted, confirmed, finalized, failed } = metrics;
   
   if (submitted === 0) {
     return 'Good'; // No transactions yet
   }
   
-  // Grand: All transactions finalized OR acknowledged as failed
-  if (finalized + acknowledgedFailures === submitted) {
+  // Gutted: Any failed transaction (permanent status - user can't recover)
+  if (failed > 0) {
+    return 'Gutted';
+  }
+  
+  // Grand: All transactions finalized (no failures)
+  if (finalized === submitted) {
     return 'Grand';
   }
   
-  // Good: All transactions confirmed OR acknowledged as failed
-  if (confirmed + acknowledgedFailures === submitted) {
+  // Good: All transactions confirmed (no failures, but not all finalized)
+  if (confirmed === submitted) {
     return 'Good';
   }
   
-  // Gutted: Some transactions failed and NOT acknowledged
-  return 'Gutted';
+  // Default: Some transactions still pending (not all confirmed yet)
+  return 'Good';
 }
 ```
+
+**Status Definitions:**
+- **Grand**: All transactions finalized (no failures)
+- **Good**: All transactions confirmed (no failures, but some may still be finalizing)
+- **Gutted**: Any failed transaction (permanent - user cannot recover from this status)
 
 ## Components Needed
 
