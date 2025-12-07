@@ -23,7 +23,19 @@ import { WEB3AUTH_NETWORK, type Web3AuthOptions } from '@web3auth/modal'
  */
 function getWeb3AuthClientId(): string {
   // Check Railway Variables first (production)
-  let clientId = process.env.NEXT_PUBLIC_EMBEDDED_WALLET_CLIENT_ID;
+  // Support both variable names for compatibility
+  let clientId = process.env.NEXT_PUBLIC_EMBEDDED_WALLET_CLIENT_ID || 
+                 process.env.NEXT_PUBLIC_METAMASK_CLIENT_ID;
+
+  // Strip quotes if Railway added them (Railway sometimes includes quotes in variable values)
+  if (clientId) {
+    clientId = clientId.trim();
+    // Remove surrounding quotes if present
+    if ((clientId.startsWith('"') && clientId.endsWith('"')) || 
+        (clientId.startsWith("'") && clientId.endsWith("'"))) {
+      clientId = clientId.slice(1, -1);
+    }
+  }
 
   // Validate and provide helpful error messages
   if (!clientId || clientId.trim() === '') {
@@ -31,21 +43,26 @@ function getWeb3AuthClientId(): string {
     const envSource = isRailway ? 'Railway Variables' : '.env file';
     
     const errorMessage = `
-⚠️ NEXT_PUBLIC_EMBEDDED_WALLET_CLIENT_ID is not set!
+⚠️ Web3Auth Client ID is not set!
 
 Current environment: ${isRailway ? 'Railway (production)' : 'Local development'}
 
 To fix this:
 ${isRailway ? `
 1. Go to Railway Dashboard → Your Project → Variables
-2. Add: NEXT_PUBLIC_EMBEDDED_WALLET_CLIENT_ID = your_web3auth_client_id
+2. Add ONE of these (both work):
+   - NEXT_PUBLIC_EMBEDDED_WALLET_CLIENT_ID = your_web3auth_client_id
+   - NEXT_PUBLIC_METAMASK_CLIENT_ID = your_web3auth_client_id
 3. Make sure it's set as a "Public" variable (not secret)
-4. Redeploy the service
+4. Make sure it's in "Shared Variables" (checkmark beside it)
+5. Redeploy the service
 
 Note: Railway Variables are shared across all services in the project.
 ` : `
 1. Create or update .env.local file in the-app directory
-2. Add: NEXT_PUBLIC_EMBEDDED_WALLET_CLIENT_ID=your_web3auth_client_id
+2. Add ONE of these (both work):
+   - NEXT_PUBLIC_EMBEDDED_WALLET_CLIENT_ID=your_web3auth_client_id
+   - NEXT_PUBLIC_METAMASK_CLIENT_ID=your_web3auth_client_id
 3. Restart the dev server
 
 Get your Client ID from: https://dashboard.web3auth.io
@@ -65,13 +82,14 @@ Web3Auth will not work until this is configured.
     
     // At runtime, throw error to make it clear
     throw new Error(
-      `NEXT_PUBLIC_EMBEDDED_WALLET_CLIENT_ID is required but not set in ${envSource}. ` +
-      `Please configure it in Railway Variables or .env.local file. ` +
+      `Web3Auth Client ID is required but not set in ${envSource}. ` +
+      `Please configure NEXT_PUBLIC_EMBEDDED_WALLET_CLIENT_ID or NEXT_PUBLIC_METAMASK_CLIENT_ID ` +
+      `in Railway Variables (make sure it's in Shared Variables with a checkmark) or .env.local file. ` +
       `Get your Client ID from: https://dashboard.web3auth.io`
     );
   }
 
-  return clientId.trim();
+  return clientId;
 }
 
 /**

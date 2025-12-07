@@ -22,6 +22,21 @@ const nextConfig = {
         '@react-native-async-storage/async-storage': false,
       };
     }
+    
+    // Suppress warnings for React Native dependencies (not needed for web)
+    // MetaMask SDK includes React Native imports but they're not used in web builds
+    config.ignoreWarnings = [
+      ...(config.ignoreWarnings || []),
+      {
+        module: /node_modules\/@metamask\/sdk/,
+        message: /Can't resolve '@react-native-async-storage\/async-storage'/,
+      },
+      {
+        module: /node_modules\/@web3auth/,
+        message: /Can't resolve '@react-native-async-storage\/async-storage'/,
+      },
+    ];
+    
     return config;
   },
   // Ensure server-only modules aren't imported in client components
