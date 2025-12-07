@@ -22,32 +22,103 @@ A local Next.js application for managing Solana wallets with transaction monitor
 
 ## Prerequisites
 
-- Node.js >= 20.0.0
-- npm >= 9.0.0
+- **Node.js** >= 20.0.0 ([Download](https://nodejs.org/))
+- **npm** >= 9.0.0 (comes with Node.js)
 
-## Setup
+Verify installation:
+```bash
+node --version  # Should show v20.x.x or higher
+npm --version   # Should show 9.x.x or higher
+```
 
-1. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+## Quick Start
 
-2. **Configure environment (optional):**
-   ```bash
-   cp .env.example .env.local
-   ```
-   
-   Edit `.env.local` if you need to change Solana RPC URL or network. Defaults are provided.
+### 1. Navigate to the project directory
 
-3. **Run development server:**
-   ```bash
-   npm run dev
-   ```
+```bash
+cd user-dashboard
+```
 
-4. **Open in browser:**
-   ```
-   http://localhost:3000
-   ```
+### 2. Install dependencies
+
+```bash
+npm install
+```
+
+This will:
+- Install all required packages (Next.js, TetherTo WDK SDK, @solana/web3.js, etc.)
+- Run post-install script to rebuild native modules (sodium-native)
+
+**Note:** If you encounter errors with native modules, run:
+```bash
+npm rebuild sodium-native
+```
+
+### 3. Configure environment (optional)
+
+The app works with defaults, but you can customize:
+
+```bash
+# Create .env.local file (optional)
+cp .env.example .env.local
+```
+
+Edit `.env.local` if you need to change Solana RPC URL or network:
+```bash
+NEXT_PUBLIC_SOLANA_RPC_URL=https://api.devnet.solana.com
+NEXT_PUBLIC_SOLANA_NETWORK=devnet
+```
+
+**Default values are provided** - you can skip this step if using devnet.
+
+### 4. Run the development server
+
+```bash
+npm run dev
+```
+
+You should see output like:
+```
+▲ Next.js 16.0.7
+- Local:        http://localhost:3000
+- ready started server on 0.0.0.0:3000
+```
+
+### 5. Open in your browser
+
+Open your browser and navigate to:
+
+```
+http://localhost:3000
+```
+
+The app will be running locally on your machine!
+
+## Running the App
+
+### Development Mode
+
+```bash
+npm run dev
+```
+
+- Runs on `http://localhost:3000`
+- Hot reload enabled (changes reflect immediately)
+- Press `Ctrl+C` to stop the server
+
+### Production Build
+
+```bash
+# Build the app
+npm run build
+
+# Start production server
+npm start
+```
+
+- Runs on `http://localhost:3000`
+- Optimized for performance
+- No hot reload
 
 ## Environment Variables
 
@@ -94,20 +165,23 @@ NEXT_PUBLIC_SOLANA_NETWORK=devnet
 - `POST /api/user/send` - Send SOL transaction
 - `GET /api/dashboard/transactions` - Get transaction data and metrics
 
-## Development
+## Development Commands
 
 ```bash
-# Development server
+# Start development server (with hot reload)
 npm run dev
 
 # Build for production
 npm run build
 
-# Start production server
+# Start production server (after build)
 npm start
 
-# Lint
+# Run linter
 npm run lint
+
+# Rebuild native modules (if needed)
+npm rebuild sodium-native
 ```
 
 ## Notes
