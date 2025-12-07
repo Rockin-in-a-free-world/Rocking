@@ -7,16 +7,11 @@
 1. **Solana Configuration** ✅ (You've added this)
    - `NEXT_PUBLIC_SOLANA_RPC_URL` = `https://api.devnet.solana.com`
    - `NEXT_PUBLIC_SOLANA_NETWORK` = `devnet`
-
-2. **MetaMask Embedded Wallets** (Required for user authentication)
-   - `NEXT_PUBLIC_EMBEDDED_WALLET_CLIENT_ID` = Your MetaMask Embedded Wallet client ID
-   - `EMBEDDED_WALLET_SECRET_KEY` = Your MetaMask Embedded Wallet secret key
-   - Get these from: https://docs.metamask.io/embedded-wallets/dashboard/
-   - Note: The `NEXT_PUBLIC_` prefix is needed for Next.js client-side access
+   - `SOLANA_RPC_URL` = `https://api.devnet.solana.com`
 
 ### Optional (Set after feemaster setup):
 
-3. **Feemaster Account** (Can be set via `/feemaster` page after deployment)
+2. **Feemaster Account** (Can be set via `/feemaster` page after deployment)
    - `FEEMASTER_SEED_PHRASE` = "word1 word2 ... word12" (12 or 24 words)
    - `FEEMASTER_PUBLIC_KEY` = Public key (will be generated)
 
@@ -43,7 +38,7 @@
 
 - [x] Solana RPC URL added to Railway variables
 - [ ] `NEXT_PUBLIC_SOLANA_NETWORK` = `devnet` added
-- [ ] MetaMask credentials added (if you have them)
+- [ ] `SOLANA_RPC_URL` = `https://api.devnet.solana.com` added
 - [ ] Railway service connected to GitHub repo
 - [ ] Build is running (check build logs)
 
@@ -80,7 +75,7 @@ Once the build succeeds:
 3. **NEXT_PUBLIC_ Prefix**
    - Variables starting with `NEXT_PUBLIC_` are exposed to the browser
    - Only use this prefix for variables that are safe to expose
-   - `EMBEDDED_WALLET_SECRET_KEY` should NOT have this prefix (server-only)
+   - Server-only variables (like `FEEMASTER_SEED_PHRASE`) should NOT have this prefix
 
 4. **Build Time vs Runtime**
    - All variables are available at build time
@@ -119,6 +114,7 @@ After adding variables, check:
 Once build succeeds:
 - Test the app at your Railway URL
 - Set up feemaster account (optional)
-- Test user authentication (when MetaMask credentials are added)
+- Test user login with seed phrase
+- Test sending SOL transactions
 - Monitor Railway metrics for usage/costs
 

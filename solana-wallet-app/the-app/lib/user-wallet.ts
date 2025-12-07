@@ -74,7 +74,10 @@ export async function getUserPublicKey(
  * Send transaction using Tether WDK SDK
  * 
  * This is the main transaction method - uses Tether WDK SDK as required.
- * Based on working examples in solana-wallet-integration/src/app.ts
+ * Based on working examples in Testing-wdk-wallet-solana/example-basic.js
+ * 
+ * The SDK returns an object with signature and fee properties:
+ * { signature: string, fee: bigint }
  */
 export async function sendTransactionWithWDK(
   walletManager: WalletManagerSolana,
@@ -85,13 +88,34 @@ export async function sendTransactionWithWDK(
   const account = await getUserAccount(walletManager, accountIndex);
   
   // Use Tether WDK SDK's sendTransaction method
-  // Based on working example: account.sendTransaction({ recipient, value, commitment })
-  const signature = await (account as any).sendTransaction({
-    recipient,
+  // Based on working example: account.sendTransaction({ to: address, value })
+  // The SDK expects 'to' parameter, not 'recipient'
+  const result = await account.sendTransaction({
+    to: recipient,
     value: amountLamports,
-    commitment: 'confirmed',
   });
 
-  return signature;
+  // Tether WDK SDK returns TransactionResult object
+  // Based on working examples, it has 'signature' property at runtime
+  // TypeScript types may show 'hash' but runtime uses 'signature'
+  const resultAny = result as any;
+  
+  // Check for signature property (runtime property name)
+  if (resultAny && typeof resultAny === 'object') {
+    if ('signature' in resultAny && typeof resultAny.signature === 'string') {
+      return resultAny.signature;
+    }
+    // Fallback: check for hash property (TypeScript type name)
+    if ('hash' in resultAny && typeof resultAny.hash === 'string') {
+      return resultAny.hash;
+    }
+  }
+  
+  // Fallback: if result is already a string
+  if (typeof result === 'string') {
+    return result;
+  }
+  
+  throw new Error(`Unexpected return type from sendTransaction: ${typeof result}. Result: ${JSON.stringify(result)}`);
 }
 

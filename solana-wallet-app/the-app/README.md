@@ -4,6 +4,8 @@ Railway has access to [this repo](https://github.com/Rockin-in-a-free-world/Demo
 
 A Next.js application demonstrating Tether WDK Solana SDK with transaction monitoring, multisig wallet creation via Google sign-on, and dashboard metrics.
 
+Here is wallet to send sol to: 5eiXxzicSu3CT37djQp8rVmrVQWPDB9KXkYt5LUvJZJD
+
 ## High-Level Prerequisites
 
 Before you begin, ensure you have:
