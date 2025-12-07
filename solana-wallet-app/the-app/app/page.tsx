@@ -2,33 +2,29 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { authenticateWithGoogle, storeWalletCredentials } from '@/lib/wallet';
 
 export default function Home() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleGoogleSignIn = async () => {
     setLoading(true);
+    setError(null);
+    
     try {
-      // TODO: Integrate MetaMask Embedded Wallets SDK
-      // For now, this is a placeholder
-      console.log('Google sign-in clicked');
+      // Authenticate with Google using MetaMask Embedded Wallets SDK
+      const { address, privateKey } = await authenticateWithGoogle();
       
-      // Simulate authentication
-      // In real implementation:
-      // 1. Initialize MetaMask Embedded Wallets SDK
-      // 2. Authenticate with Google
-      // 3. Get Solana account
-      // 4. Store credentials
-      // 5. Redirect to dashboard
+      // Store credentials in session
+      storeWalletCredentials(address, privateKey);
       
-      // Placeholder: Store mock address for demo
-      sessionStorage.setItem('user_solana_address', '11111111111111111111111111111111');
-      
+      // Redirect to dashboard
       router.push('/dashboard');
-    } catch (error) {
-      console.error('Sign-in error:', error);
-      alert('Sign-in failed. Please try again.');
+    } catch (err: any) {
+      console.error('Sign-in error:', err);
+      setError(err.message || 'Sign-in failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -60,12 +56,13 @@ export default function Home() {
           )}
         </button>
 
-        <div className="mt-6 p-4 bg-yellow-50 rounded-lg">
-          <p className="text-sm text-yellow-800">
-            <strong>Demo Mode:</strong> This is a development version. 
-            MetaMask Embedded Wallets SDK integration is pending.
-          </p>
-        </div>
+        {error && (
+          <div className="mt-4 p-4 bg-red-50 rounded-lg">
+            <p className="text-sm text-red-800">
+              <strong>Error:</strong> {error}
+            </p>
+          </div>
+        )}
 
         <div className="mt-6 text-sm text-gray-500 text-center">
           <p>By signing in, you agree to:</p>

@@ -1,31 +1,36 @@
 import { TransactionMetrics, Status } from './types';
 
 /**
- * Calculate dashboard status from metrics
+ * Calculate dashboard status from metrics (on-chain data only)
  * 
- * - Grand: Finalized + AcknowledgedFailures = Submitted
- * - Good: Confirmed + AcknowledgedFailures = Submitted
- * - Gutted: Confirmed + AcknowledgedFailures < Submitted
+ * - Grand: All transactions finalized (no failures)
+ * - Good: All transactions confirmed (no failures, but not all finalized)
+ * - Gutted: Any failed transaction (permanent - user can't recover)
  */
 export function calculateStatus(metrics: TransactionMetrics): Status {
-  const { submitted, confirmed, finalized, acknowledgedFailures } = metrics;
+  const { submitted, confirmed, finalized, failed } = metrics;
   
   if (submitted === 0) {
     return 'Good'; // No transactions yet
   }
   
-  // Grand: All transactions finalized OR acknowledged as failed
-  if (finalized + acknowledgedFailures === submitted) {
+  // Gutted: Any failed transaction (permanent status)
+  if (failed > 0) {
+    return 'Gutted';
+  }
+  
+  // Grand: All transactions finalized (no failures)
+  if (finalized === submitted) {
     return 'Grand';
   }
   
-  // Good: All transactions confirmed OR acknowledged as failed
-  if (confirmed + acknowledgedFailures === submitted) {
+  // Good: All transactions confirmed (no failures, but not all finalized)
+  if (confirmed === submitted) {
     return 'Good';
   }
   
-  // Gutted: Some transactions failed and NOT acknowledged
-  return 'Gutted';
+  // Default: Some transactions still pending (not all confirmed yet)
+  return 'Good';
 }
 
 /**
@@ -41,12 +46,12 @@ export function getStatusConfig(status: Status) {
     Good: {
       icon: '😃',
       color: 'bg-yellow-100 text-yellow-800',
-      message: 'All transactions confirmed',
+      message: 'All transactions confirmed (some may still be finalizing)',
     },
     Gutted: {
       icon: '😢',
       color: 'bg-red-100 text-red-800',
-      message: 'Some transactions need attention',
+      message: 'One or more transactions failed (permanent status)',
     },
   };
   

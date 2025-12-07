@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createConnection } from '@/lib/solana';
 import { PublicKey } from '@solana/web3.js';
 import { getTransactionSignatures, getTransactionStatuses, calculateMetrics } from '@/lib/transactions';
+import { calculateStatus } from '@/lib/status';
 
 /**
  * Get transaction data for dashboard
@@ -28,16 +29,17 @@ export async function GET(request: NextRequest) {
     // Get transaction statuses
     const transactions = await getTransactionStatuses(connection, signatures);
 
-    // TODO: Get acknowledged failures from on-chain storage
-    const acknowledgedFailures: string[] = [];
-
-    // Calculate metrics
-    const metrics = calculateMetrics(transactions, acknowledgedFailures);
+    // Calculate metrics from on-chain data only
+    const metrics = calculateMetrics(transactions);
+    
+    // Calculate status (Grand/Good/Gutted)
+    const status = calculateStatus(metrics);
 
     return NextResponse.json({
       success: true,
       transactions,
       metrics,
+      status,
     });
   } catch (error: any) {
     return NextResponse.json(

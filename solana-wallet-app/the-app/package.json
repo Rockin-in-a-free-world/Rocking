@@ -10,6 +10,7 @@
     "postinstall": "npm rebuild sodium-native || true"
   },
   "dependencies": {
+    "@metamask/sdk": "^0.34.0",
     "@scure/bip39": "^1.6.0",
     "@solana/web3.js": "^1.98.4",
     "@tetherto/wdk-wallet-solana": "^1.0.0-beta.4",

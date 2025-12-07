@@ -45,11 +45,10 @@ export async function getTransactionStatuses(
 }
 
 /**
- * Calculate metrics from transactions
+ * Calculate metrics from transactions (on-chain data only)
  */
 export function calculateMetrics(
-  transactions: Transaction[],
-  acknowledgedFailures: string[] = []
+  transactions: Transaction[]
 ): TransactionMetrics {
   const metrics: TransactionMetrics = {
     submitted: transactions.length,
@@ -57,7 +56,6 @@ export function calculateMetrics(
     confirmed: 0,
     finalized: 0,
     failed: 0,
-    acknowledgedFailures: acknowledgedFailures.length,
   };
   
   transactions.forEach(tx => {

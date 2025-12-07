@@ -88,7 +88,7 @@ export default function FeemasterDashboard() {
   const handlePayRent = async () => {
     // TODO: Implement rent payment
     alert('Rent payment functionality coming soon');
-    setOperationStatus(prev => ({ ...prev, payRent: true }));
+    // Don't toggle button - keep it as info message only
   };
 
   const handleRequestAirdrop = async () => {
@@ -240,13 +240,9 @@ export default function FeemasterDashboard() {
               </button>
               <button
                 onClick={handlePayRent}
-                className={`w-full px-4 py-2 rounded-lg text-center ${
-                  operationStatus.payRent
-                    ? 'bg-green-500 text-white hover:bg-green-600'
-                    : 'bg-gray-400 text-white hover:bg-gray-500'
-                }`}
+                className="w-full px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 text-center"
               >
-                {operationStatus.payRent ? '✓ Pay Rent' : 'Pay Rent'}
+                Pay Rent
               </button>
               <button
                 onClick={handleRequestAirdrop}
@@ -264,14 +260,6 @@ export default function FeemasterDashboard() {
                 className="block px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-center"
               >
                 View on Explorer
-              </a>
-              <a
-                href="https://faucet.solana.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-center"
-              >
-                Get Devnet SOL
               </a>
             </div>
           </div>

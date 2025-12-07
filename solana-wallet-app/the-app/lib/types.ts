@@ -9,7 +9,7 @@ export type TransactionState =
   | 'failed';      // Error occurred
 
 /**
- * Transaction metrics
+ * Transaction metrics (on-chain data only)
  */
 export interface TransactionMetrics {
   submitted: number;
@@ -17,7 +17,6 @@ export interface TransactionMetrics {
   confirmed: number;
   finalized: number;
   failed: number;
-  acknowledgedFailures: number; // User-acknowledged failures
 }
 
 /**
