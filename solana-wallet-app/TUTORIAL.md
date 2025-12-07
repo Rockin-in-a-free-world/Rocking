@@ -467,28 +467,32 @@ export async function correctTransaction(
 
 ### 2. Feemaster Account Setup
 
-**Note:** The feemaster account is managed through a **separate admin app** using Tether SDK (seed phrase controlled, no social sign-on).
+**Note:** The feemaster account is managed through **integrated admin routes** using Tether SDK (seed phrase controlled, no social sign-on).
 
 See [FEEMASTER_ACCOUNT.md](./FEEMASTER_ACCOUNT.md) for complete setup instructions.
 
 **Quick Setup:**
 
-1. **Create feemaster account** (one-time, using Tether SDK):
-   ```typescript
-   import WalletManagerSolana from '@tetherto/wdk-wallet-solana';
-   
-   const feemasterWallet = new WalletManagerSolana(seedPhrase, {
-     provider: 'https://api.devnet.solana.com',
-   });
-   const feemasterAccount = await feemasterWallet.getAccount(0);
-   ```
+1. **Access feemaster login**: Visit `/feemaster` route
+   - **Setup (New)**: Leave seed phrase empty → check confirmation → generates new wallet
+   - **Login (Existing)**: Enter seed phrase → accesses existing wallet (account index 0)
 
-2. **Fund the feemaster account** (send SOL to `feemasterAccount.publicKey`)
+2. **Dashboard features** (`/feemaster/dashboard`):
+   - Wallet address display with copy button
+   - Automatic balance loading
+   - Programmatic airdrop (💧 Get Devnet SOL - no GitHub auth required)
+   - Toggle private key display (View/Hide)
+   - Rent payment queue
 
-3. **Use feemaster admin app** to:
-   - View private key (for funding)
-   - Sign transactions to pay user account rent
-   - Monitor rent payment queue
+3. **Fund the feemaster account**:
+   - Use the programmatic airdrop button (no GitHub auth)
+   - Or use web faucet: https://faucet.solana.com (requires GitHub auth)
+   - Recommended: 5-10 SOL for testing
+
+4. **Store seed phrase**:
+   - Save the generated seed phrase securely
+   - Add to Railway Variables for persistence: `FEEMASTER_SEED_PHRASE`
+   - Temporary sessionStorage enables immediate dashboard access
 
 ### 3. Close Account
 

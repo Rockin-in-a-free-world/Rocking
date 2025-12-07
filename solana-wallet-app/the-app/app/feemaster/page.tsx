@@ -8,23 +8,27 @@ export default function FeemasterLogin() {
   const [seedPhrase, setSeedPhrase] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [confirmed, setConfirmed] = useState(false);
 
   const handleLogin = async () => {
     setError('');
     setLoading(true);
 
     try {
-      // Validate seed phrase
-      const words = seedPhrase.trim().split(/\s+/);
-      if (words.length !== 12 && words.length !== 24) {
-        throw new Error('Seed phrase must be 12 or 24 words');
+      const isEmpty = !seedPhrase.trim();
+      
+      // Confirmation only required when generating new seed phrase (empty input)
+      if (isEmpty && !confirmed) {
+        throw new Error('Please confirm that you understand the requirements');
       }
 
-      // Setup feemaster account (creates account index 0 and stores in .env)
+      // Access feemaster account (account index 0 from seed phrase)
+      // If seedPhrase is empty, API will generate new seed phrase (setup mode)
+      // If seedPhrase provided, API will access existing wallet (login mode)
       const response = await fetch('/api/feemaster/setup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ seedPhrase }),
+        body: JSON.stringify({ seedPhrase: seedPhrase.trim() || undefined }),
       });
 
       if (!response.ok) {
@@ -37,6 +41,21 @@ export default function FeemasterLogin() {
       // Store in session (client-side only)
       sessionStorage.setItem('feemaster_public_key', data.publicKey);
       sessionStorage.setItem('feemaster_setup_complete', 'true');
+      
+      // Store seed phrase temporarily in sessionStorage for dashboard operations
+      // This allows dashboard to work immediately before Railway env vars are set
+      // User should still add to Railway Variables for persistence
+      if (data.seedPhrase) {
+        sessionStorage.setItem('feemaster_seed_phrase_temp', data.seedPhrase);
+      } else if (seedPhrase.trim()) {
+        // If user provided seed phrase, store it temporarily
+        sessionStorage.setItem('feemaster_seed_phrase_temp', seedPhrase.trim());
+      }
+      
+      // If seed phrase was generated (new setup), show it to user
+      if (data.isNewSetup && data.seedPhrase) {
+        alert(`⚠️ IMPORTANT: Save this seed phrase securely!\n\n${data.seedPhrase}\n\nYou won't be able to recover your account without it!\n\nAlso add it to Railway Variables for persistence.`);
+      }
       
       // Redirect to dashboard
       router.push('/feemaster/dashboard');
@@ -52,17 +71,17 @@ export default function FeemasterLogin() {
       <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
         <h1 className="text-3xl font-bold text-center mb-2">Feemaster Admin</h1>
         <p className="text-gray-600 text-center mb-8">
-          Login with your seed phrase
+          Login with your seed phrase or generate a new one
         </p>
 
         <div className="mb-4">
           <label className="block text-sm font-medium mb-2">
-            Seed Phrase
+            Seed Phrase (optional - leave empty to generate new)
           </label>
           <textarea
             value={seedPhrase}
             onChange={(e) => setSeedPhrase(e.target.value)}
-            placeholder="Enter seed phrase (12 or 24 words)"
+            placeholder="Enter existing seed phrase or leave empty to generate new"
             rows={3}
             className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
@@ -71,12 +90,28 @@ export default function FeemasterLogin() {
           )}
         </div>
 
+        {!seedPhrase.trim() && (
+          <div className="mb-4">
+            <label className="flex items-start space-x-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={confirmed}
+                onChange={(e) => setConfirmed(e.target.checked)}
+                className="mt-1"
+              />
+              <span className="text-sm text-gray-700">
+                I understand that by logging in without a seed, I will create a new Solana wallet and must store the seed phrase.
+              </span>
+            </label>
+          </div>
+        )}
+
         <button
           onClick={handleLogin}
-          disabled={loading}
+          disabled={loading || (!seedPhrase.trim() && !confirmed)}
           className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
         >
-          {loading ? 'Logging in...' : 'Login'}
+          {loading ? 'Logging in...' : 'Gmail login'}
         </button>
 
         <div className="mt-6 p-4 bg-red-50 rounded-lg">

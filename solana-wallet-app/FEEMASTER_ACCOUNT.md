@@ -95,6 +95,10 @@ feemaster-admin/
 
 ### Login Flow
 
+**Two Modes:**
+1. **Setup (New)**: Leave seed phrase empty → generates new → creates new wallet
+2. **Login (Existing)**: Enter seed phrase → accesses existing wallet (account index 0)
+
 ```typescript
 // app/page.tsx
 'use client';
@@ -105,36 +109,90 @@ import { useRouter } from 'next/navigation';
 export default function FeemasterLogin() {
   const [seedPhrase, setSeedPhrase] = useState('');
   const [error, setError] = useState('');
+  const [confirmed, setConfirmed] = useState(false);
   const router = useRouter();
 
   const handleLogin = async () => {
     try {
-      // Validate seed phrase (12 or 24 words)
-      const words = seedPhrase.trim().split(/\s+/);
-      if (words.length !== 12 && words.length !== 24) {
-        throw new Error('Seed phrase must be 12 or 24 words');
+      const isEmpty = !seedPhrase.trim();
+      
+      // Confirmation only required when generating new seed phrase (empty input)
+      if (isEmpty && !confirmed) {
+        throw new Error('Please confirm that you understand the requirements');
       }
 
-      // Store in session (client-side only, never send to server)
-      sessionStorage.setItem('feemaster_seed_phrase', seedPhrase);
+      // Call setup/login API
+      const response = await fetch('/api/feemaster/setup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ seedPhrase: seedPhrase.trim() || undefined }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Setup failed');
+      }
+
+      const data = await response.json();
+      
+      // Store in session (client-side only)
+      sessionStorage.setItem('feemaster_public_key', data.publicKey);
+      sessionStorage.setItem('feemaster_setup_complete', 'true');
+      
+      // Store seed phrase temporarily in sessionStorage for dashboard operations
+      // This allows dashboard to work immediately before Railway env vars are set
+      if (data.seedPhrase) {
+        sessionStorage.setItem('feemaster_seed_phrase_temp', data.seedPhrase);
+      } else if (seedPhrase.trim()) {
+        sessionStorage.setItem('feemaster_seed_phrase_temp', seedPhrase.trim());
+      }
+      
+      // If seed phrase was generated (new setup), show it to user
+      if (data.isNewSetup && data.seedPhrase) {
+        alert(`⚠️ IMPORTANT: Save this seed phrase securely!\n\n${data.seedPhrase}\n\nYou won't be able to recover your account without it!\n\nAlso add it to Railway Variables for persistence.`);
+      }
       
       // Redirect to dashboard
-      router.push('/dashboard');
-    } catch (err) {
+      router.push('/feemaster/dashboard');
+    } catch (err: any) {
       setError(err.message);
     }
   };
 
   return (
     <div>
-      <h1>Feemaster Admin Login</h1>
-      <textarea
-        value={seedPhrase}
-        onChange={(e) => setSeedPhrase(e.target.value)}
-        placeholder="Enter seed phrase (12 or 24 words)"
-        rows={3}
-      />
-      <button onClick={handleLogin}>Login</button>
+      <h1>Feemaster Admin</h1>
+      <p>Login with your seed phrase or generate a new one</p>
+      
+      <div>
+        <label>Seed Phrase (optional - leave empty to generate new)</label>
+        <textarea
+          value={seedPhrase}
+          onChange={(e) => setSeedPhrase(e.target.value)}
+          placeholder="Enter existing seed phrase or leave empty to generate new"
+          rows={3}
+        />
+      </div>
+
+      {!seedPhrase.trim() && (
+        <div>
+          <label>
+            <input
+              type="checkbox"
+              checked={confirmed}
+              onChange={(e) => setConfirmed(e.target.checked)}
+            />
+            I understand that by logging in without a seed, I will create a new Solana wallet and must store the seed phrase.
+          </label>
+        </div>
+      )}
+
+      <button 
+        onClick={handleLogin}
+        disabled={!seedPhrase.trim() && !confirmed}
+      >
+        Gmail login
+      </button>
       {error && <p style={{ color: 'red' }}>{error}</p>}
     </div>
   );
@@ -143,49 +201,119 @@ export default function FeemasterLogin() {
 
 ### Dashboard
 
+**Features:**
+- Displays wallet address (public key) with copy button
+- Shows balance (automatically loads on mount)
+- Programmatic airdrop button (no GitHub auth required)
+- Toggle private key display (View/Hide)
+- Rent payment queue (pending users)
+
 ```typescript
-// app/dashboard/page.tsx
+// app/feemaster/dashboard/page.tsx
 'use client';
 
-import { useEffect, useState } from 'react';
-import { createFeemasterAccount, getFeemasterAccount } from '@/lib/feemaster';
-import AccountInfo from '@/components/AccountInfo';
-import PrivateKeyDisplay from '@/components/PrivateKeyDisplay';
-import RentPaymentQueue from '@/components/RentPaymentQueue';
+import { useEffect, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function FeemasterDashboard() {
-  const [walletManager, setWalletManager] = useState(null);
-  const [account, setAccount] = useState(null);
-  const [balance, setBalance] = useState(null);
+  const router = useRouter();
+  const [publicKey, setPublicKey] = useState<string>('');
+  const [balance, setBalance] = useState<string>('0');
+  const [privateKey, setPrivateKey] = useState<string>('');
+  const [showPrivateKey, setShowPrivateKey] = useState(false);
+
+  const handleCheckBalance = useCallback(async () => {
+    // Get seed phrase from sessionStorage (temporary) or uses env vars
+    const tempSeedPhrase = sessionStorage.getItem('feemaster_seed_phrase_temp');
+    
+    const response = await fetch('/api/feemaster/balance', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ seedPhrase: tempSeedPhrase || undefined }),
+    });
+    
+    const data = await response.json();
+    setBalance(data.balanceSOL);
+  }, []);
+
+  const handleViewPrivateKey = async () => {
+    // Toggle: if already showing, hide it
+    if (showPrivateKey) {
+      setShowPrivateKey(false);
+      return;
+    }
+    
+    // Otherwise, fetch and show private key
+    const tempSeedPhrase = sessionStorage.getItem('feemaster_seed_phrase_temp');
+    const response = await fetch('/api/feemaster/private-key', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ seedPhrase: tempSeedPhrase || undefined }),
+    });
+    
+    const data = await response.json();
+    setPrivateKey(data.privateKey);
+    setShowPrivateKey(true);
+  };
+
+  const handleRequestAirdrop = async () => {
+    const response = await fetch('/api/feemaster/airdrop', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ publicKey, amount: 2 }),
+    });
+    
+    const data = await response.json();
+    alert(`✅ Airdrop successful! ${data.balanceSOL} SOL received.`);
+    handleCheckBalance(); // Refresh balance
+  };
 
   useEffect(() => {
-    // Get seed phrase from session
-    const seedPhrase = sessionStorage.getItem('feemaster_seed_phrase');
-    if (!seedPhrase) {
-      window.location.href = '/';
+    const setupComplete = sessionStorage.getItem('feemaster_setup_complete');
+    const storedPublicKey = sessionStorage.getItem('feemaster_public_key');
+    
+    if (!setupComplete || !storedPublicKey) {
+      router.push('/feemaster');
       return;
     }
 
-    // Initialize wallet
-    const wm = createFeemasterAccount(seedPhrase);
-    setWalletManager(wm);
-
-    // Get account and balance
-    getFeemasterAccount(wm).then(async (acc) => {
-      setAccount(acc);
-      const bal = await acc.getBalance();
-      setBalance(bal);
-    });
-  }, []);
-
-  if (!account) return <div>Loading...</div>;
+    setPublicKey(storedPublicKey);
+    // Automatically load balance for account index 0
+    handleCheckBalance();
+  }, [router, handleCheckBalance]);
 
   return (
     <div>
       <h1>Feemaster Admin Dashboard</h1>
-      <AccountInfo account={account} balance={balance} />
-      <PrivateKeyDisplay walletManager={walletManager} />
-      <RentPaymentQueue account={account} />
+      
+      <div>
+        <h2>Account Info</h2>
+        <div>
+          <label>Wallet Address (Public Key)</label>
+          <input type="text" value={publicKey} readOnly />
+          <button onClick={() => navigator.clipboard.writeText(publicKey)}>Copy</button>
+        </div>
+        <div>
+          <span>Balance: {balance} SOL</span>
+        </div>
+      </div>
+
+      <div>
+        <h2>Feemaster Operations</h2>
+        <button onClick={handleCheckBalance}>Check Balance</button>
+        <button onClick={handleViewPrivateKey}>
+          {showPrivateKey ? 'Hide Private Key' : 'View Private Key'}
+        </button>
+        <button onClick={handleRequestAirdrop}>💧 Get Devnet SOL (2 SOL)</button>
+      </div>
+
+      {showPrivateKey && privateKey && (
+        <div>
+          <h3>Private Key</h3>
+          <textarea value={privateKey} readOnly />
+          <p>⚠️ Keep this private key secure. Never share it.</p>
+        </div>
+      )}
     </div>
   );
 }

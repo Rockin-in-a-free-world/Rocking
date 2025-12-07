@@ -4,11 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "postinstall": "npm rebuild sodium-native || true"
   },
   "dependencies": {
+    "@scure/bip39": "^1.6.0",
     "@solana/web3.js": "^1.98.4",
     "@tetherto/wdk-wallet-solana": "^1.0.0-beta.4",
     "bip39": "^3.1.0",

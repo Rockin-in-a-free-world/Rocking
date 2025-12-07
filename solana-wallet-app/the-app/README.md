@@ -1,5 +1,7 @@
 # Solana Wallet Demo App
 
+Railway has access to [this repo](https://github.com/Rockin-in-a-free-world/Demo-solana-app.git) and is serving it from this [public endpoint](https://demo-solana-app-production.up.railway.app/).
+
 A Next.js application demonstrating Tether WDK Solana SDK with transaction monitoring, multisig wallet creation via Google sign-on, and dashboard metrics.
 
 ## High-Level Prerequisites
@@ -35,6 +37,19 @@ Before you begin, ensure you have:
 6. **Tether WDK Solana SDK**
    - `@tetherto/wdk-wallet-solana`
    - Installed via npm
+
+## 🔐 Environment Variables Needed
+
+**For Railway (add in dashboard):**
+- `NEXT_PUBLIC_METAMASK_CLIENT_ID`
+- `METAMASK_SECRET_KEY`
+- `NEXT_PUBLIC_SOLANA_RPC_URL`
+- `NEXT_PUBLIC_SOLANA_NETWORK`
+- `FEEMASTER_SEED_PHRASE` (set after first setup)
+- `FEEMASTER_PUBLIC_KEY` (set after first setup)
+
+**For Local Development (.env.local):**
+- Same variables as above
 
 ## Testing Phase
 

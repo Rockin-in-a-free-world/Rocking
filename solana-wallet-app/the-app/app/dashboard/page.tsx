@@ -1,10 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Connection, PublicKey } from '@solana/web3.js';
-import { createConnection } from '@/lib/solana';
 import { TransactionMetrics as Metrics, Status } from '@/lib/types';
-import { getTransactionSignatures, getTransactionStatuses, calculateMetrics } from '@/lib/transactions';
 import { calculateStatus } from '@/lib/status';
 import StatusAlert from '@/components/StatusAlert';
 import TransactionMetrics from '@/components/TransactionMetrics';
@@ -30,25 +27,21 @@ export default function DashboardPage() {
   const loadDashboardData = async (address: string) => {
     try {
       setIsLoading(true);
-      const connection = createConnection();
-      const publicKey = new PublicKey(address);
+      
+      // Call API route instead of using Solana SDK directly in client
+      const response = await fetch(`/api/dashboard/transactions?address=${encodeURIComponent(address)}`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch transaction data');
+      }
 
-      // Get transaction signatures
-      const signatures = await getTransactionSignatures(connection, publicKey);
-
-      // Get transaction statuses
-      const transactions = await getTransactionStatuses(connection, signatures);
-
-      // TODO: Get acknowledged failures from on-chain storage
-      const acknowledgedFailures: string[] = [];
-
-      // Calculate metrics
-      const calculatedMetrics = calculateMetrics(transactions, acknowledgedFailures);
-      setMetrics(calculatedMetrics);
-
-      // Calculate status
-      const calculatedStatus = calculateStatus(calculatedMetrics);
-      setStatus(calculatedStatus);
+      const data = await response.json();
+      
+      if (data.success) {
+        setMetrics(data.metrics);
+        const statusType = calculateStatus(data.metrics);
+        setStatus(statusType);
+      }
     } catch (error) {
       console.error('Error loading dashboard data:', error);
     } finally {

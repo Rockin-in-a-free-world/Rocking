@@ -145,12 +145,17 @@ function calculateStatus(metrics: TransactionMetrics): 'Grand' | 'Good' | 'Gutte
 ### 4. Account Components
 - `CloseAccountModal`
 
-### 5. Feemaster Admin App (Separate)
-- `FeemasterLogin` (seed phrase input)
+### 5. Feemaster Admin App (Integrated)
+- `FeemasterLogin` (seed phrase input or generate new)
+  - Two modes: Setup (new) or Login (existing)
+  - Confirmation checkbox (only when generating new)
+  - Button: "Gmail login"
 - `FeemasterDashboard`
-- `AccountInfo` (public key, balance)
-- `PrivateKeyDisplay` (view private key for funding)
-- `RentPaymentQueue` (sign transactions to pay user rent)
+  - Account info: Wallet address with copy button, balance
+  - Operations: Check balance, View/Hide private key, Get Devnet SOL (programmatic airdrop)
+  - Rent payment queue (pending users)
+- Temporary sessionStorage for seed phrase (enables immediate dashboard access)
+- API endpoints accept seed phrase from request body (fallback to env vars)
 
 ## API Routes
 
@@ -172,11 +177,22 @@ function calculateStatus(metrics: TransactionMetrics): 'Grand' | 'Good' | 'Gutte
 ### `/api/account`
 - Close account
 
-### Feemaster Admin App (Separate App)
-- Login with seed phrase (client-side only)
-- View account info and private key
-- Sign rent payment transactions
-- Monitor rent payment queue
+### Feemaster Admin App (Integrated Routes)
+- `/feemaster` - Login page
+  - Enter seed phrase (accesses existing wallet) OR leave empty (generates new)
+  - Confirmation checkbox (only when generating new)
+  - Button: "Gmail login"
+- `/feemaster/dashboard` - Admin dashboard
+  - Wallet address display with copy button
+  - Automatic balance loading
+  - Programmatic airdrop (no GitHub auth)
+  - Toggle private key display
+  - Rent payment queue
+- API Routes:
+  - `POST /api/feemaster/setup` - Setup/login (creates or accesses wallet)
+  - `POST /api/feemaster/balance` - Get balance (accepts seed phrase from body)
+  - `POST /api/feemaster/private-key` - Get private key (accepts seed phrase from body)
+  - `POST /api/feemaster/airdrop` - Request airdrop (programmatic, no GitHub auth)
 
 ## State Management
 
