@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import './globals.css'
-import Web3AuthWrapper from '@/components/Web3AuthWrapper'
 
 export const metadata: Metadata = {
   title: 'Solana Wallet Demo App',
@@ -15,9 +14,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <Web3AuthWrapper>
-          {children}
-        </Web3AuthWrapper>
+        {children}
       </body>
     </html>
   )
