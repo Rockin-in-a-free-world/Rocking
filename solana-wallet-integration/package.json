@@ -1,0 +1,38 @@
+{
+  "name": "solana-wallet-integration",
+  "version": "1.0.0",
+  "description": "Integration of MetaMask Embedded Wallets with WDK Solana SDK",
+  "main": "dist/app.js",
+  "type": "module",
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=9.0.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/app.js",
+    "dev": "tsx src/app.ts",
+    "test": "tsx src/test.ts"
+  },
+  "keywords": [
+    "solana",
+    "metamask",
+    "wallet",
+    "embedded-wallets"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@metamask/embedded-wallets": "^0.1.0",
+    "@tetherto/wdk-wallet-solana": "^1.0.0-beta.4",
+    "@solana/web3.js": "^1.87.6",
+    "bs58": "^5.0.0",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
+  }
+}
+
