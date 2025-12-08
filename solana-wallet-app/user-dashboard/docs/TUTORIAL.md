@@ -42,7 +42,7 @@ A **12-word phrase** that acts as the master key to your wallet. From this phras
 - Public keys (your wallet address)
 - Multiple accounts (account index 0, 1, 2, etc.)
 
-**Example:** `abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about`
+**Example:** `abandon sink seal abandon abandon abandon abandon abandon abandon abandon abandon about`
 
 ### Public Key (Address)
 Your **wallet address** - like a bank account number. Anyone can send SOL to this address. It's derived from your seed phrase but cannot be reversed to get your seed phrase.
