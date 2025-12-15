@@ -5,6 +5,7 @@ import { getTransactionSignatures, getTransactionStatuses, calculateMetrics } fr
 import { calculateStatus } from '@/lib/status';
 import { createUserWalletManagerFromSeed, getUserBalance } from '@/lib/user-wallet';
 import { LAMPORTS_PER_SOL } from '@solana/web3.js';
+import { getSpecificTokenBalances } from '@/lib/token-balances';
 
 /**
  * Get transaction data for dashboard
@@ -41,16 +42,29 @@ export async function GET(request: NextRequest) {
     // Calculate status (Grand/Good/Gutted)
     const status = calculateStatus(metrics);
 
-    // Get balance - use Tether WDK SDK if seed phrase provided, otherwise fallback to @solana/web3.js
+    // Get balance and token balances - use Tether WDK SDK if seed phrase provided, otherwise fallback to @solana/web3.js
     let balance: number;
+    let tokenBalances: { SOL: number; WSOL: number; USDC: number };
+    
     if (seedPhrase) {
-      // Use Tether WDK SDK for balance (wallet operation)
+      // Use Tether WDK SDK for balance and token balances (wallet operations)
       const walletManager = createUserWalletManagerFromSeed(seedPhrase);
       const balanceLamports = await getUserBalance(walletManager, 0);
       balance = Number(balanceLamports) / LAMPORTS_PER_SOL;
+      
+      // Get token balances using Tether WDK SDK
+      tokenBalances = await getSpecificTokenBalances(walletManager, 0);
+      // Override SOL with the balance we already calculated (for consistency)
+      tokenBalances.SOL = balance;
     } else {
       // Fallback to @solana/web3.js for balance (read-only query)
       balance = await connection.getBalance(publicKey) / LAMPORTS_PER_SOL;
+      // If no seed phrase, we can't use Tether WDK SDK, so return zeros for token balances
+      tokenBalances = {
+        SOL: balance,
+        WSOL: 0,
+        USDC: 0,
+      };
     }
 
     return NextResponse.json({
@@ -59,6 +73,7 @@ export async function GET(request: NextRequest) {
       metrics,
       status: { status }, // status is calculated, wrap in object for compatibility
       balance,
+      tokenBalances, // Include token balances
     });
   } catch (error: any) {
     return NextResponse.json(

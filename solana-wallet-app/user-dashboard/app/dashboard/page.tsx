@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { TransactionMetrics as Metrics, Status } from '@/lib/types';
+import { TransactionMetrics as Metrics, Status, TokenBalances } from '@/lib/types';
 import { getStoredWalletAddress, isWalletAuthenticated, clearWalletCredentials } from '@/lib/wallet';
 import StatusAlert from '@/components/StatusAlert';
 import TransactionMetrics from '@/components/TransactionMetrics';
@@ -12,6 +12,7 @@ export default function DashboardPage() {
   const [metrics, setMetrics] = useState<Metrics | null>(null);
   const [status, setStatus] = useState<Status | null>(null);
   const [balance, setBalance] = useState<number | null>(null);
+  const [tokenBalances, setTokenBalances] = useState<TokenBalances | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [userAddress, setUserAddress] = useState<string | null>(null);
   const [sendRecipient, setSendRecipient] = useState('');
@@ -58,6 +59,10 @@ export default function DashboardPage() {
         // Use status from API (calculated server-side)
         setStatus(data.status.status || data.status); // Handle both object and string
         setBalance(data.balance);
+        // Set token balances if available
+        if (data.tokenBalances) {
+          setTokenBalances(data.tokenBalances);
+        }
       }
     } catch (error) {
       console.error('Error loading dashboard data:', error);
@@ -218,6 +223,50 @@ export default function DashboardPage() {
         <div className="mb-8">
           <h2 className="text-xl font-semibold mb-4">Transaction Metrics & Balance</h2>
           <TransactionMetrics metrics={metrics} isLoading={isLoading} balance={balance} />
+        </div>
+
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold mb-4">Token Balances</h2>
+          <div className="bg-white rounded-lg shadow p-6">
+            {isLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="p-4 bg-gray-100 rounded-lg animate-pulse">
+                    <div className="h-4 bg-gray-300 rounded mb-2"></div>
+                    <div className="h-8 bg-gray-300 rounded"></div>
+                  </div>
+                ))}
+              </div>
+            ) : tokenBalances ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="p-4 bg-blue-50 border-2 border-blue-200 rounded-lg">
+                  <div className="text-sm text-gray-600 mb-1">SOL</div>
+                  <div className="text-2xl font-bold text-blue-800">
+                    {tokenBalances.SOL.toFixed(4)} SOL
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1">Native SOL</div>
+                </div>
+                <div className="p-4 bg-purple-50 border-2 border-purple-200 rounded-lg">
+                  <div className="text-sm text-gray-600 mb-1">WSOL</div>
+                  <div className="text-2xl font-bold text-purple-800">
+                    {tokenBalances.WSOL > 0 ? tokenBalances.WSOL.toFixed(4) : '0.0000'} WSOL
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1">Wrapped SOL</div>
+                </div>
+                <div className="p-4 bg-green-50 border-2 border-green-200 rounded-lg">
+                  <div className="text-sm text-gray-600 mb-1">USDC</div>
+                  <div className="text-2xl font-bold text-green-800">
+                    {tokenBalances.USDC > 0 ? tokenBalances.USDC.toFixed(2) : '0.00'} USDC
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1">USD Coin</div>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center text-gray-500 py-4">
+                Unable to load token balances
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
