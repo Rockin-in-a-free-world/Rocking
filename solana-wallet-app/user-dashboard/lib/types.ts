@@ -35,3 +35,12 @@ export interface Transaction {
   isUserInitiated?: boolean; // True if user initiated this transaction (sent), false if received (deposit/airdrop)
 }
 
+/**
+ * Token balances
+ */
+export interface TokenBalances {
+  SOL: number; // Native SOL balance
+  WSOL: number; // Wrapped SOL token balance
+  USDC: number; // USDC token balance
+}
+
